@@ -1,4 +1,4 @@
-import random
+import random as rd
 
 charNames = (
     'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu',
@@ -45,10 +45,10 @@ class Dice:
             dice.inner.style.fontWeight = 'bold'
             dice.inner.style.textAlign = 'center'
             dice.inner.style.position = 'absolute'
-            dice.inner.innerHTML = '?'
             dice.appendChild (dice.inner)
                         
-        self.diceIndices = random.shuffle (range (nrOfDice))    # First is correct answer, last is question        
+        self.diceIndices = list (range (nrOfDice))
+        rd.shuffle (self.diceIndices)    # First is correct answer, last is question
         
         self.banner = document.createElement ('div')
         self.banner.style.position = 'absolute'
@@ -72,42 +72,51 @@ class Dice:
         self.failAudio = __new__ (Audio ('fail.mp3'))
         
         window.onresize = self.rightSize
-        self.rightSize ()
+        self.attempt (self.dices [self.diceIndices [correctAnswerIndexIndex]], True)
         
     def gotoTranscryptSite (self):
         document.location.href = 'http://www.transcrypt.org'
         
-    def attempt (self, dice): 
+    def attempt (self, dice, initialize = False):
         # Correct answer selected by user
         if self.dices.index (dice) == self.diceIndices [0]:
             #Start audio a.s.a.p. as it determines attainable playing speed
-            self.rollAudio.play ()
+            if not initialize:
+                self.rollAudio.play ()
 
             # Shuffle all QA pairs
             answerQuestionPairs = questionsByAnswer.items ()
-            random.shuffle (answerQuestionPairs)
+            rd.shuffle (answerQuestionPairs)
             
             # Dice index of new question gets value of dice index of old answer, swap to keep all indices
-            self.diceIndices [-1], self.diceIndices [0] = self.diceIndices [0], self.diceIndices [-1]
+            self.diceIndices [questionIndexIndex], self.diceIndices [correctAnswerIndexIndex] = (
+                self.diceIndices [correctAnswerIndexIndex], self.diceIndices [questionIndexIndex]
+            )
             
             # Shuffle all indices except the index of the new question, the first one will be the index of the new answer
-            random.shuffle (self.diceIndices [:-1])
+            temp = self.diceIndices [:questionIndexIndex]
+            rd.shuffle (temp)
+            self.diceIndices [:questionIndexIndex] = temp
+            
+            # Adapt locations of inner divs and fontsize
+            self.rightSize ()
             
             # Place new question
-            self.dices [self.diceIndices [-1]] = answerQuestionPairs [0][1]
+            self.dices [self.diceIndices [questionIndexIndex]] .style.backgroundColor = 'green'        
+            self.dices [self.diceIndices [questionIndexIndex]] .inner.innerHTML = answerQuestionPairs [correctAnswerIndexIndex][1]
             
             # Place new answers           
-            for diceIndexIndex, diceIndex in enumerate (self.diceIndices [:-1]):
+            for diceIndexIndex, diceIndex in enumerate (self.diceIndices [:questionIndexIndex]):
                 self.roll (self.dices [diceIndex], answerQuestionPairs [diceIndexIndex][0])                
                     
         # Wrong answer selected by user
-        elif self.dices.index (dice) != self.diceIndices [-1]:  # Not the question...
+        elif self.dices.index (dice) != self.diceIndices [questionIndexIndex]:  # Not the question...
             self.failAudio.play ()
            
             def restoreColor ():
-                dice.color = blue
+                dice.style.backgroundColor = 'blue'
                 
-            dice.color = red
+            dice.style.backgroundColor = 'red'
             setTimeout (restoreColor, 500)
         
     def roll (self, dice, targetLabel):
@@ -117,16 +126,16 @@ class Dice:
             nonlocal frameIndex
             frameIndex -= 1
             
-            answerIndex = random.randint (0, len (questionsByAnswer) - 1)
-            dice.inner.innerHTML = questionsByAnswer.values () [answerIndex]
-
             if frameIndex:
-                dice.style.color = random.choice (('red', 'green', 'blue', 'yellow'))
+                dice.style.color = rd.choice (('red', 'green', 'blue', 'yellow'))
+                dice.inner.innerHTML = questionsByAnswer.keys () [rd.randint (0, len (questionsByAnswer) - 1)]
                 setTimeout (frame, 100)
+            else:
+                dice.style.color = 'white'
+                dice.inner.innerHTML = targetLabel
         
-        dice.backgroundColor = 'blue'
+        dice.style.backgroundColor = 'blue'     
         frame ()
-        dice.style.color = 'white'
     
     def rightSize (self):
         self.pageWidth = window.innerWidth
@@ -134,15 +143,17 @@ class Dice:
         portrait = self.pageHeight > self.pageWidth
         
         for diceIndex, dice in enumerate (self.dices):
+            wordLength = 1 if diceIndex == self.diceIndices [questionIndexIndex] else 4
+        
             if self.pageHeight > self.pageWidth:    # Portrait
                 dice.style.height = 0.3 * self.pageHeight
                 dice.style.width = 0.4 * self.pageWidth
                 dice.style.top = (0.03 + (diceIndex if diceIndex < 3 else diceIndex - 3) * 0.32) * self.pageHeight
                 dice.style.left = (0.06 if diceIndex < 3 else 0.54) * self.pageWidth
                 
-                charBoxSide = 0.3 * self.pageHeight
-                dice.inner.style.top = 0.15 * self.pageHeight - 0.6 * charBoxSide
-                dice.inner.style.left = 0.2 * self.pageWidth - 0.5 * charBoxSide
+                self.charBoxSide = 0.25  * self.pageHeight / wordLength
+                dice.inner.style.top = 0.15 * self.pageHeight - 0.6 * self.charBoxSide
+                dice.inner.style.left = 0.2 * self.pageWidth - 0.5  * wordLength * self.charBoxSide
 
                 self.banner.style.top = 0.975 * self.pageHeight
                 self.banner.style.left = 0.06 * self.pageWidth              
@@ -154,17 +165,17 @@ class Dice:
                 dice.style.top = (0.06 if diceIndex < 3 else 0.54) * self.pageHeight
                 dice.style.left = (0.03 + (diceIndex if diceIndex < 3 else diceIndex - 3) * 0.32) * self.pageWidth
                 
-                charBoxSide = 0.4 * self.pageHeight
-                dice.inner.style.top = 0.2 * self.pageHeight - 0.6 * charBoxSide
-                dice.inner.style.left = 0.15 * self.pageWidth - 0.5 * charBoxSide
+                self.charBoxSide = 0.3 * self.pageHeight / wordLength
+                dice.inner.style.top = 0.2 * self.pageHeight - 0.6 * self.charBoxSide
+                dice.inner.style.left = 0.15 * self.pageWidth - 0.5 * wordLength * self.charBoxSide
                 
                 self.banner.style.top = 0.95 * self.pageHeight
                 self.banner.style.left = 0.03 * self.pageWidth
                 self.bannerLarge.style.fontSize = 0.015 * self.pageWidth
                 self.bannerSmall.style.fontSize = 0.012 * self.pageWidth
-                
-            dice.inner.style.height = charBoxSide
-            dice.inner.style.width = charBoxSide
-            dice.inner.style.fontSize = charBoxSide
+
+            dice.inner.style.height = self.charBoxSide
+            dice.inner.style.width = self.charBoxSide
+            dice.inner.style.fontSize = self.charBoxSide
             
 dice = Dice ()

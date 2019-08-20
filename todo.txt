@@ -1,2 +1,8 @@
-- Make github project
 - Debug
+- Make three inital versions several versions: upper, lower, both
+- Find out about punctiation
+- Adapt to punctiation
+- Put online
+- QC with Gusta
+
+
