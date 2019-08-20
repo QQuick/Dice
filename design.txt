@@ -1,0 +1,27 @@
+Er worden 5 random vraag antwoord paren gegenereerd.
+De vraag van een willekeurige van die 5 wordt op de locatie van 't vorige goede antwoord gezet, zonder knipperen.
+De 5 antwoorden worden met knipperen op de overige locaties neergezet.
+
+Op elk moment is bekend:
+- Lokatie huidige vraag
+- Lokatie correcte antwoord
+Deze lokaties worden onthouden bij plaatsing.
+
+De eerste keer is de lokatie van de huidige vraag en van 't correcte antwoord willekeurig.
+De keren daarna wordt komt de nieuwe vraag op de plek van 't oude correcte antwoord.
+'t Nieuwe correcte antwoord komt op een willekeurige plaats
+
+Er wordt steeds geloot tussen alle overblijvende indices.
+
+De eerste keer wordt aanvankelijk geloot tussen 6 indices
+De volgende keren wordt aanvankelijk geloot tussen 5 indices.
+De overblijvende indices staan in 'n list die steeds kleiner wordt.
+Die list wordt gevuld met indices en dan geshuffled.
+Daardoor is random prikken niet meer nodig.
+
+Als een vraag fout wordt beantwoord, wordt het betreffende foute antwoord even rood en klinkt het failure geluid.
+Als een vraag goed wordt beantwoord, vind een nieuwe trekking plaats met een roffel.
+De nieuwe antwoorden worden geplaatst in donkerrood met knipperen.
+De nieuwe vraag wordt geplaatst in donkerblauw zonder knipperen.
+
+
