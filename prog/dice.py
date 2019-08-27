@@ -8,11 +8,13 @@ charNames = (
 lowerChars = {charName: '&' + charName + ';' for charName in charNames}
 upperChars = {charName.capitalize (): '&' + charName.capitalize () + ';' for charName in charNames}
 
-questionsByAnswer = lowerChars
+questionsByAnswer = dict ()
 
 nrOfDice = 6
 correctAnswerIndexIndex = 0
 questionIndexIndex = nrOfDice - 1   # At end, shuffled only first time
+
+safari = 'safari' in navigator.userAgent.lower () and 'apple' in navigator.vendor.lower ()
 
 class Dice:
     def __init__ (self):
@@ -82,7 +84,10 @@ class Dice:
         if self.dices.index (dice) == self.diceIndices [0]:
             #Start audio a.s.a.p. as it determines attainable playing speed
             if not initialize:
+                if safari:
+                    self.rollAudio.load ()
                 self.rollAudio.play ()
+
 
             # Shuffle all QA pairs
             answerQuestionPairs = questionsByAnswer.items ()
@@ -111,6 +116,8 @@ class Dice:
                     
         # Wrong answer selected by user
         elif self.dices.index (dice) != self.diceIndices [questionIndexIndex]:  # Not the question...
+            if safari:
+                self.failAudio.load ()
             self.failAudio.play ()
            
             def restoreColor ():
@@ -134,7 +141,7 @@ class Dice:
                 dice.style.color = 'white'
                 dice.inner.innerHTML = targetLabel
         
-        dice.style.backgroundColor = 'blue'     
+        dice.style.backgroundColor = 'blue' 
         frame ()
     
     def rightSize (self):
@@ -143,7 +150,7 @@ class Dice:
         portrait = self.pageHeight > self.pageWidth
         
         for diceIndex, dice in enumerate (self.dices):
-            wordLength = 1 if diceIndex == self.diceIndices [questionIndexIndex] else 4
+            wordLength = 1 if diceIndex == self.diceIndices [questionIndexIndex] else 5
         
             if self.pageHeight > self.pageWidth:    # Portrait
                 dice.style.height = 0.3 * self.pageHeight
@@ -151,7 +158,7 @@ class Dice:
                 dice.style.top = (0.03 + (diceIndex if diceIndex < 3 else diceIndex - 3) * 0.32) * self.pageHeight
                 dice.style.left = (0.06 if diceIndex < 3 else 0.54) * self.pageWidth
                 
-                self.charBoxSide = 0.25  * self.pageHeight / wordLength
+                self.charBoxSide = 0.2  * self.pageHeight / wordLength
                 dice.inner.style.top = 0.15 * self.pageHeight - 0.6 * self.charBoxSide
                 dice.inner.style.left = 0.2 * self.pageWidth - 0.5  * wordLength * self.charBoxSide
 
@@ -165,7 +172,7 @@ class Dice:
                 dice.style.top = (0.06 if diceIndex < 3 else 0.54) * self.pageHeight
                 dice.style.left = (0.03 + (diceIndex if diceIndex < 3 else diceIndex - 3) * 0.32) * self.pageWidth
                 
-                self.charBoxSide = 0.3 * self.pageHeight / wordLength
+                self.charBoxSide = 0.25 * self.pageHeight / wordLength
                 dice.inner.style.top = 0.2 * self.pageHeight - 0.6 * self.charBoxSide
                 dice.inner.style.left = 0.15 * self.pageWidth - 0.5 * wordLength * self.charBoxSide
                 
@@ -178,4 +185,14 @@ class Dice:
             dice.inner.style.width = self.charBoxSide
             dice.inner.style.fontSize = self.charBoxSide
             
-dice = Dice ()
+def setMode (mode):
+    global questionsByAnswer
+    if mode == 'lower':
+        questionsByAnswer.update (lowerChars)
+    elif mode == 'upper':
+        questionsByAnswer.update (upperChars)
+    else:
+        questionsByAnswer.update (lowerChars)
+        questionsByAnswer.update (upperChars)
+        
+    dice = Dice ()

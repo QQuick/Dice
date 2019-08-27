@@ -1,0 +1,10 @@
+CACHE MANIFEST
+
+CACHE:
+dice.html
+roll.mp3
+fail.mp3
+target/dice.js
+target/math.js
+target/org.transcrypt.__runtime__.js
+target/random.js
